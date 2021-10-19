@@ -1,0 +1,70 @@
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+
+data <- read.csv('data/food_production_impact.csv', sep = ',')
+
+data$Food.product
+
+products_to_plot <- c('Beef (beef herd)', 'Lamb & Mutton',
+                      'Fish (farmed)', 'Prawns (farmed)',
+                      'Pig Meat', 'Tofu (soybeans)')
+
+data_to_plot <- data %>% 
+                  filter(Entity %in% products_to_plot)
+
+names(data_to_plot)
+
+columns_to_plot <- c('Entity',
+                     'Land.use.per.1000kcal..Poore...Nemecek..2018.',
+                     'GHG.emissions.per.1000kcal..Poore...Nemecek..2018.',
+                     'Freshwater.withdrawals.per.1000kcal..Poore...Nemecek..2018.')
+
+final_data <- 
+  data_to_plot[columns_to_plot] %>% 
+  transmute(Product = Entity,
+            'land' = Land.use.per.1000kcal..Poore...Nemecek..2018.,
+            'ghg' = GHG.emissions.per.1000kcal..Poore...Nemecek..2018.,
+            'freshwater' = Freshwater.withdrawals.per.1000kcal..Poore...Nemecek..2018.)
+
+View(data_to_plot[columns_to_plot])
+
+final_data$Product <- factor(final_data$Product,
+                             levels = final_data$Product[
+                               order(final_data$land, decreasing=TRUE)])
+
+p1 <- final_data %>% 
+        ggplot(aes_string(x = 'Product', y = 'land')) +
+        labs(title = 'Land used',
+             y = expression(Land~(m^2))) +
+        coord_flip() + 
+        geom_bar(stat="identity", fill='chartreuse4')
+
+final_data$Product <- factor(final_data$Product,
+                             levels = final_data$Product[
+                               order(final_data$freshwater, decreasing=TRUE)])
+
+p2 <- final_data %>% 
+  ggplot(aes_string(x = 'Product', y = 'freshwater')) +
+  labs(title = 'Freshwater withdrawals',
+       y = expression(Freshwater~Used~(l)), 
+       x = '') +
+  coord_flip() + 
+  geom_bar(stat="identity", fill = 'darkturquoise')
+
+final_data$Product <- factor(final_data$Product,
+                             levels = final_data$Product[
+                               order(final_data$ghg, decreasing=TRUE)])
+
+p3 <- final_data %>% 
+  ggplot(aes_string(x = 'Product', y = 'ghg')) +
+  labs(title = 'Greenhouse gas emission',
+       y = expression(Emission~(t)),
+       x = '') +
+  coord_flip() + 
+  geom_bar(stat="identity")
+
+
+ggarrange(p1, p2, p3, ncol=3, nrow = 1)
+ggsave('plots/resources_per_calories.png',  width = 16, height = 8)
