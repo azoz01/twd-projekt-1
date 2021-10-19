@@ -1,4 +1,4 @@
-db <- read.csv2(file = "../db/WorldMeatProductionDatasets/animals-slaughtered-for-meat.csv",
+db <- read.csv2(file = "data/WorldMeatProductionDatasets/animals-slaughtered-for-meat.csv",
                 sep = ",", header = T)
 
 library(dplyr)
