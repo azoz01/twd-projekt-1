@@ -28,8 +28,6 @@ final_data <-
             'ghg' = GHG.emissions.per.1000kcal..Poore...Nemecek..2018.,
             'freshwater' = Freshwater.withdrawals.per.1000kcal..Poore...Nemecek..2018.)
 
-View(data_to_plot[columns_to_plot])
-
 final_data$Product <- factor(final_data$Product,
                              levels = final_data$Product[
                                order(final_data$land, decreasing=TRUE)])
@@ -65,6 +63,8 @@ p3 <- final_data %>%
   coord_flip() + 
   geom_bar(stat="identity")
 
+plot <- ggarrange(p1, p2, p3, ncol=3, nrow = 1)
 
-ggarrange(p1, p2, p3, ncol=3, nrow = 1)
-ggsave('plots/resources_per_calories.png',  width = 16, height = 8)
+annotate_figure(plot, top = text_grob("Usage of resources per 1000 kcal",
+                                      face = 'bold'))
+ggsave('plots/resources_per_calories.png',  width = 16, height = 9)
