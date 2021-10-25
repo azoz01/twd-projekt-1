@@ -67,10 +67,10 @@ countries %>%
 db %>% 
   filter(Entity == "China") %>% 
   ggplot(aes(Year, Cattle..cattle.slaughtered.)) + 
-  geom_path() + 
+  geom_path(color = "red", size = 1.5) + 
   scale_x_continuous(breaks = seq(1960, 2020, 5)) +
   theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Cattle slaughtered depending in China",
+  labs(title = "Cattle slaughtered in China",
        x = "Year",
        y = "Cattle slaughtered")
 

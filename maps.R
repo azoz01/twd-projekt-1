@@ -58,16 +58,18 @@ world.emission <- world.emission %>%
 # I'm gonna delete this record
 
 world.emission <- world.emission %>% 
-  mutate(emissionCO2.per.capita = ifelse(emissionCO2.per.capita < 50,
+  mutate(emissionCO2.per.capita = ifelse(emissionCO2.per.capita < 4,
                                          emissionCO2.per.capita, NA))
 
 world.emission %>% 
-  ggplot(aes(fill = emissionCO2.per.capita, geometry = geometry)) +
+  ggplot(aes(fill = emissionCO2.per.capita, geometry = geometry), color = NA) +
   geom_sf() +
-  scale_fill_viridis_c(option = "plasma") + 
-  labs(title = "Yearly CO2 emission per capita",
-       subtitle = "According to FAO data \nAlso with no scale but who cares",
-       fill = "Kilograms of CO2 per capita (x1000)")
+  scale_fill_distiller(palette=5, trans = "reverse") + 
+  labs(title = "Yearly CO2 emission per capita due to food production",
+       subtitle = "According to FAO data",
+       fill = "CO2 per capita yearly in tonnes") +
+  theme(plot.caption = element_text(size = 7, face = "italic"),
+        legend.position = "bottom")
 
 ############################################################################
 # PER PROTEIN
