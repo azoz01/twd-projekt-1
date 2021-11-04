@@ -26,16 +26,23 @@ data_to_plot = co2_world_data %>%
                        `Carbon footprint of meat` = `Carbon footprint of meat`/1e9)
 
 data_to_plot %>% 
-ggplot() +
-  geom_line(aes(Year, GHG.emitted, color = 'World summary'), size = 2) +
-  geom_line(aes(Year, `Carbon footprint of meat`, color = 'Meat production'), size = 1.5) +
-  labs(x = 'Year', y = 'Gigatons of GHG', 
-       title = 'Comparison of GHG emitted by meat production to total world GHG emission',
-       colour='Legend') +
-  scale_x_discrete(limits = 1990:2018, expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0, 0)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = .5)) +
-  expand_limits(y = 0)
+  ggplot() +
+    geom_segment(aes(x = Year, xend = Year, 
+                     y = `Carbon footprint of meat`, yend = GHG.emitted), 
+                     color = 'grey') + 
+    geom_point(aes(x = Year, y = `Carbon footprint of meat`, color = 'World summary'), size = 3) + 
+    geom_point(aes(x = Year, y = GHG.emitted, color = 'Meat production'), size = 3) + 
+    theme(legend.position = 'right') +
+    scale_x_discrete(limits = 1990:2018, expand = c(.01, 0)) +
+    scale_y_continuous(expand = c(.05, 0)) +
+    theme(axis.text.x = element_text(angle = 90, vjust = .5)) +
+    expand_limits(y = 0) +
+    labs(x = 'Year', y = 'Gigatons of GHG', 
+         title = 'Comparison of GHG emitted by meat production to total world GHG emission',
+         colour='Legend') +
+    scale_color_manual(values = c('orange', '#1f77b4'), labels = c('World summary', 
+                                                                   'Meat production'))
 
+    
 ggsave('plots/ghg_emission_plot.png',  width = 16, height = 8)
 
