@@ -77,4 +77,4 @@ plot1993 +
   labs(
     title = "Food production and waste in 2013",
     fill = "Type"
-  )
+  ) 
