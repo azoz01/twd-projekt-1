@@ -57,6 +57,7 @@ food2013$v <- fct_inorder(food2013$v)
 food_all <- union(food1993, food2013) %>% 
   mutate(Year = str_sub(Year, start = 2))
 
+# WCALE NIE W MILIONACH TYLKO DZIESI¥TKACH MILIONÓW
 ggplot(food_all, aes(fill = v, values = Value)) +
   geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) +
   facet_wrap(~Year, nrow = 1, strip.position = "bottom") +
@@ -68,7 +69,7 @@ ggplot(food_all, aes(fill = v, values = Value)) +
     title = "Produkcja ¿ywnoœci w latach 1993 i 2013",
     subtitle = "",
     x = "Rok",
-    y = "Iloœæ w 1000 ton",
+    y = "Iloœæ w milionach ton kg",
     fill = "Typy ¿ywnoœci"
   ) +
   theme_minimal(base_family = "Roboto Condensed") +
