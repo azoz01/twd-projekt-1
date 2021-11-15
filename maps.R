@@ -8,17 +8,9 @@ library("rnaturalearthdata")
 library(dplyr)
 library(tidyr)
 library(SmarterPoland)
+library(stringi)
 
-world <- ne_countries(scale = "medium", returnclass = "sf")
-class(world)
-
-# ggplot(data = world) +
-#   geom_sf()
-
-# world %>%
-#   mutate(info = 2) %>%
-#   ggplot(aes(fill = info)) +
-#   geom_sf()
+library(maps)
 
 fao <- read.csv2("data/FAO.csv", header = T, sep = ",")
 food <- read.csv2("data/Food_Production.csv", header = T, sep = ",")
@@ -44,110 +36,39 @@ food.summary <- fao2013 %>%
   mutate(total.emission = value * emissionCO2 * 1000) %>% 
   group_by(Area.Abbreviation, Area) %>% 
   summarise(emissionCO2 = sum(total.emission, na.rm = T)) %>% 
-  rename(name = Area.Abbreviation, fullname = Area) %>% 
-  mutate(emissionCO2 = as.integer(emissionCO2))
+  rename(name = Area.Abbreviation, region = Area) %>% 
+  mutate(emissionCO2 = as.integer(emissionCO2)) %>% 
+  ungroup()
 
-world.emission <- world %>% 
-  merge(food.summary, by.x  = "iso_a3", by.y = "name", all.x = T)
+# add USA
+food.summary[food.summary$region == "United States of America", "region"] = "USA"
+ 
+# add China
+china_val <- food.summary %>% 
+  filter(stri_detect(region, regex = "China")) %>%
+  summarise(emissionCO2 = sum(emissionCO2)) %>% 
+  pull()
 
+# add Russia
+food.summary[food.summary$region == "Russian Federation", "region"] = "Russia"
 
-world.emission <- world.emission %>% 
-  mutate(emissionCO2.per.capita = emissionCO2 / pop_est)
+food.summary <- food.summary %>% 
+  add_row(name = "CH", region = "China", emissionCO2 = china_val)
 
-# Qatar have big af emission, don't know why, but this broke whole plot, so
-# I'm gonna delete this record
+map <- map_data("world")
 
-world.emission <- world.emission %>% 
-  mutate(emissionCO2.per.capita = ifelse(emissionCO2.per.capita < 4,
-                                         emissionCO2.per.capita, NA))
+worldmap <- left_join(map, food.summary)
 
-world.emission %>% 
-  ggplot(aes(fill = emissionCO2.per.capita, geometry = geometry), color = NA) +
-  geom_sf() +
-  scale_fill_distiller(palette=5, trans = "reverse") + 
-  labs(title = "Yearly CO2 emission per capita due to food production",
-       subtitle = "According to FAO data",
-       fill = "CO2 per capita yearly in tonnes") +
-  theme(plot.caption = element_text(size = 7, face = "italic"),
-        legend.position = "bottom")
+write.csv2(worldmap, file = "./data/map_complete_data.csv")
 
-############################################################################
-# PER PROTEIN
-
-
-typeoffood <- food %>% 
-  select(Food.product, Eutrophying.emissions.per.100g.protein..gPOâ..eq.per.100.grams.protein.) %>% 
-  rename(Item = Food.product)
-
-food.summary <- fao2013 %>% 
-  inner_join(typeoffood, by = "Item") %>% 
-  rename(emissionCO2 = Eutrophying.emissions.per.100g.protein..gPOâ..eq.per.100.grams.protein.) %>% 
-  mutate(emissionCO2 = as.numeric(emissionCO2)) %>% 
-  mutate(total.emission = value * emissionCO2 * 1000) %>% 
-  group_by(Area.Abbreviation, Area) %>% 
-  summarise(emissionCO2 = sum(total.emission, na.rm = T)) %>% 
-  rename(name = Area.Abbreviation, fullname = Area) %>% 
-  mutate(emissionCO2 = as.integer(emissionCO2))
-
-world.emission <- world %>% 
-  merge(food.summary, by.x  = "iso_a3", by.y = "name", all.x = T)
+ggplot(worldmap, aes(x = long, y = lat)) +
+  geom_polygon(aes(group = group, fill = log10(emissionCO2))) + 
+  scale_fill_gradient(low = "#1aff66", high = "#001a09") +
+  coord_quickmap() +
+  labs(title = "Emisja CO2 per capita w roku 2013",
+       x = "",
+       y = "",
+       fill = "Emisja CO2")
 
 
-world.emission <- world.emission %>% 
-  mutate(emissionCO2.per.capita = emissionCO2 / pop_est)
-
-# Qatar have big af emission, don't know why, but this broke whole plot, so
-# I'm gonna delete this record
-
-world.emission <- world.emission %>%
-  mutate(emissionCO2.per.capita = ifelse(emissionCO2.per.capita < 8,
-                                         emissionCO2.per.capita, NA))
-
-world.emission %>% 
-  ggplot(aes(fill = emissionCO2.per.capita, geometry = geometry)) +
-  geom_sf() +
-  scale_fill_viridis_c(option = "plasma") + 
-  labs(title = "Yearly CO2 emission per capita",
-       subtitle = "According to FAO data \nPer 100g protein? Does it even make sense?",
-       fill = "Kilograms of CO2 per capita (x1000)")
-
-
-##############################################################################
-# PER WATER
-
-typeoffood <- food %>% 
-  select(Freshwater.withdrawals.per.kilogram..liters.per.kilogram., Food.product) %>% 
-  rename(Item = Food.product)
-
-food.summary <- fao2013 %>% 
-  inner_join(typeoffood, by = "Item") %>% 
-  rename(emissionCO2 = Freshwater.withdrawals.per.kilogram..liters.per.kilogram.) %>% 
-  mutate(emissionCO2 = as.numeric(emissionCO2)) %>% 
-  mutate(total.emission = value * emissionCO2 * 1000) %>% 
-  group_by(Area.Abbreviation, Area) %>% 
-  summarise(emissionCO2 = sum(total.emission, na.rm = T)) %>% 
-  rename(name = Area.Abbreviation, fullname = Area) %>% 
-  mutate(emissionCO2 = as.integer(emissionCO2))
-
-world.emission <- world %>% 
-  merge(food.summary, by.x  = "iso_a3", by.y = "name", all.x = T)
-
-
-world.emission <- world.emission %>% 
-  mutate(emissionCO2.per.capita = emissionCO2 / pop_est)
-
-# Qatar have big af emission, don't know why, but this broke whole plot, so
-# I'm gonna delete this record
-
-world.emission <- world.emission %>%
-  mutate(emissionCO2.per.capita = ifelse(emissionCO2.per.capita < 60,
-                                         emissionCO2.per.capita, NA))
-
-world.emission %>% 
-  ggplot(aes(fill = emissionCO2.per.capita, geometry = geometry)) +
-  geom_sf() +
-  scale_fill_viridis_c(option = "plasma") + 
-  labs(title = "Yearly freshwater wasting per capita",
-       subtitle = "According to FAO data \nAlso with no scale but who cares",
-       fill = "Liters of freshwater per capita (x1000)")
 

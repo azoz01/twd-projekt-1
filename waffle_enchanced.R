@@ -9,6 +9,7 @@ library(ggplot2)
 library(forcats)
 library(tidyr)
 library(ggpubr)
+library(stringr)
 
 
 
@@ -53,28 +54,28 @@ food2013 <- food2013 %>%
 food1993$v <- fct_inorder(food1993$v)
 food2013$v <- fct_inorder(food2013$v)
 
+food_all <- union(food1993, food2013) %>% 
+  mutate(Year = str_sub(Year, start = 2))
 
-
-plot2013 <- ggplot(food2013, aes(fill = v, values = Value)) +
-  geom_waffle(n_rows = 5, size = 3, color = "white") +
-  scale_fill_manual(
-    values = c("#258e25", "#cc0000", "#85e085", "#ff9999")
-  ) +
-  coord_equal() + 
-  theme_void()
-
-plot1993 <- ggplot(food1993, aes(fill = v, values = Value)) +
-  geom_waffle(n_rows = 5, size = 3, color = "white") +
-  scale_fill_manual(
-    values = c("#258e25", "#cc0000", "#85e085", "#ff9999")
-  ) +
-  coord_equal() + 
-  theme_void()
-
-# ggarrange(plot1993, plot2013, nrow = 2)
-
-plot1993 +
+ggplot(food_all, aes(fill = v, values = Value)) +
+  geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) +
+  facet_wrap(~Year, nrow = 1, strip.position = "bottom") +
+  scale_x_discrete() + 
+  scale_y_continuous(labels = function(x) x * 10, # make this multiplyer the same as n_rows
+                     expand = c(0,0)) +
+  coord_equal() +
   labs(
-    title = "Food production and waste in 2013",
-    fill = "Type"
-  ) 
+    title = "Produkcja ¿ywnoœci w latach 1993 i 2013",
+    subtitle = "",
+    x = "Rok",
+    y = "Iloœæ w 1000 ton",
+    fill = "Typy ¿ywnoœci"
+  ) +
+  theme_minimal(base_family = "Roboto Condensed") +
+  theme(panel.grid = element_blank(), axis.ticks.y = element_line()) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  scale_fill_manual(values = c("#258e25", "#cc0000", "#85e085", "#ff9999"),
+                    labels = c("Warzywa i owoce", "Miêso i nabia³",
+                               "Warzywa i owoce zmarnowane", "Miêso i nabia³ zmarnowane"))
+
+
