@@ -63,12 +63,28 @@ write.csv2(worldmap, file = "./data/map_complete_data.csv")
 
 ggplot(worldmap, aes(x = long, y = lat)) +
   geom_polygon(aes(group = group, fill = log10(emissionCO2))) + 
-  scale_fill_gradient(low = "#1aff66", high = "#001a09") +
-  coord_quickmap() +
+  scale_fill_gradient(
+    low = "#e6ffee",
+    high = "#00330f",
+    limits = c(0,10)) +
+  coord_quickmap(
+    xlim = c(-170,190),
+    ylim = c(-60,90)
+    ) + 
   labs(title = "Emisja CO2 per capita w roku 2013",
-       x = "",
-       y = "",
-       fill = "Emisja CO2")
+     subtitle = "w wyniku produkcji ¿ywnoœci",
+     x = "",
+     y = "",
+     fill = "Emisja CO2 w tonach") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  ) + 
+  scale_x_discrete(breaks = c(), labels = c()) + 
+  scale_y_discrete(breaks = c(), labels = c()) +
+  guides(fill = guide_colourbar(barwidth = 0.5, barheight = 10)) +
+  theme_light()
+  
 
 
 

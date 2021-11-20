@@ -62,14 +62,13 @@ ggplot(food_all, aes(fill = v, values = Value)) +
   geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) +
   facet_wrap(~Year, nrow = 1, strip.position = "bottom") +
   scale_x_discrete() + 
-  scale_y_continuous(labels = function(x) x * 10, # make this multiplyer the same as n_rows
-                     expand = c(0,0)) +
+  scale_y_continuous(breaks = c(), labels = c()) +
   coord_equal() +
   labs(
     title = "Produkcja ¿ywnoœci w latach 1993 i 2013",
     subtitle = "",
-    x = "Rok",
-    y = "Iloœæ w milionach ton kg",
+    y = "",
+    x = "",
     fill = "Typy ¿ywnoœci"
   ) +
   theme_minimal(base_family = "Roboto Condensed") +
