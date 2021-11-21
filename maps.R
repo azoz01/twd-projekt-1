@@ -66,13 +66,14 @@ ggplot(worldmap, aes(x = long, y = lat)) +
   scale_fill_gradient(
     low = "#e6ffee",
     high = "#00330f",
-    limits = c(0,10)) +
+    limits = c(0,10),
+    labels = c("0","10E2.5","10E5","10E7.5","10E10")) +
   coord_quickmap(
     xlim = c(-170,190),
     ylim = c(-60,90)
     ) + 
   labs(title = "Emisja CO2 per capita w roku 2013",
-     subtitle = "w wyniku produkcji ¿ywnoœci",
+     subtitle = "w wyniku produkcji ¿ywnoœci; skala logarytmiczna",
      x = "",
      y = "",
      fill = "Emisja CO2 w tonach") +
