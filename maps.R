@@ -61,13 +61,16 @@ worldmap <- left_join(map, food.summary)
 
 write.csv2(worldmap, file = "./data/map_complete_data.csv")
 
+# low = "#e6ffee",
+# high = "#00330f",
+
 ggplot(worldmap, aes(x = long, y = lat)) +
   geom_polygon(aes(group = group, fill = log10(emissionCO2))) + 
   scale_fill_gradient(
     low = "#e6ffee",
     high = "#00330f",
     limits = c(0,10),
-    labels = c("0","10E2.5","10E5","10E7.5","10E10")) +
+    ) +
   coord_quickmap(
     xlim = c(-170,190),
     ylim = c(-60,90)
